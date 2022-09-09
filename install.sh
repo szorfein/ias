@@ -11,12 +11,6 @@ USERNAME="null"
 # > station wlan0 connect openwrt
 # > exit
 
-# Grab the last script
-# cd /tmp
-# curl -sSL https://transfer.sh/ID/install.sh -o install.sh
-# chmod 700 install.sh
-# install.sh -d /dev/<DISK>
-
 echo "A script to install Archlinux."
 
 die() { echo "$1"; exit 1; }
@@ -59,11 +53,6 @@ options() {
         ;;
     esac
   done
-}
-
-to_transfer() {
-  echo "Uploading to transfer.sh..."
-  curl --upload-file ./install.sh https://transfer.sh/install-arch.sh
 }
 
 time_date_ctl() {
@@ -199,7 +188,6 @@ main() {
     root_password
     [ "$USERNAME" == "null" ] || new_user
   }
-  to_transfer
 }
 
 main "$@"
