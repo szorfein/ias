@@ -1,0 +1,2 @@
+# ias
+Install Archlinux Script
