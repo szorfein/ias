@@ -15,6 +15,11 @@ echo "A script to install Archlinux."
 
 die() { echo "$1"; exit 1; }
 
+is_efi() {
+    [ -d /sys/firmware/efi ] && echo true || echo false
+}
+
+
 in_chroot() {
   chroot "$WORKDIR" /bin/bash -c "source /etc/profile && $1"
 }
@@ -88,6 +93,9 @@ mount_partition() {
 }
 
 arch_install() {
+  pacman-key --init
+  pacman-key --populate archlinux
+
   echo "Installing Arch..."
   pacstrap /mnt base linux linux-firmware
   genfstab -U /mnt >> /mnt/etc/fstab
@@ -100,7 +108,9 @@ make_chroot() {
   mount -t sysfs /sys "$WORKDIR"/sys/
   mount --rbind /dev "$WORKDIR"/dev/
   mount --rbind /run "$WORKDIR"/run/
-  mount --rbind /sys/firmware/efi/efivars "$WORKDIR"/sys/firmware/efi/efivars/
+  if is_efi ; then
+      mount --rbind /sys/firmware/efi/efivars "$WORKDIR"/sys/firmware/efi/efivars/
+  fi
   cp /etc/resolv.conf "$WORKDIR"/etc/resolv.conf
 }
 
@@ -143,8 +153,11 @@ last_tools() {
 }
 
 install_boot_loader() {
-  in_chroot "grub-install --target=x86_64-efi --efi-directory=/efi \
-    --bootloader-id=GRUB --recheck --no-floppy"
+    if is_efi ; then
+        in_chroot "grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB"
+    else
+       in_chroot "grub-install --target=i386-pc $DISK"
+    fi
 }
 
 grub_install() {
